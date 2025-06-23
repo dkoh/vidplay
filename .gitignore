@@ -1,0 +1,10 @@
+# Environments
+.venv/
+venv/
+__pycache__/
+
+# Temporary files
+temp/
+
+# OS-specific files
+.DS_Store 
