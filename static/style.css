@@ -1,5 +1,5 @@
 body {
-    font-family: sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     margin: 2em;
     background-color: #f4f4f9;
     color: #333;
@@ -20,14 +20,50 @@ h1, h2 {
     border-radius: 5px;
 }
 
+#service-selection {
+    margin: 20px 0;
+}
+
+#service-checkboxes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+#controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 20px;
+    margin: 20px 0;
+    padding: 15px;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+.time-control {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.time-input {
+    width: 120px;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
 #controls button {
-    padding: 10px 15px;
+    padding: 8px 15px;
     font-size: 1em;
     cursor: pointer;
     background-color: #007bff;
     color: white;
     border: none;
     border-radius: 5px;
+    transition: background-color 0.2s;
 }
 
 #controls button:hover {
@@ -39,27 +75,103 @@ h1, h2 {
     padding: 0;
 }
 
-#timestamps-list li {
+.clip-item {
     background-color: #fff;
-    margin-bottom: 10px;
-    padding: 10px;
+    margin-bottom: 15px;
+    padding: 15px;
     border-radius: 5px;
     border: 1px solid #ddd;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.clip-info {
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
 
-.transcription-text {
-    margin-top: 8px;
-    font-style: italic;
-    color: #555;
+.clip-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    padding: 10px 0;
+    border-top: 1px solid #eee;
+    border-bottom: 1px solid #eee;
 }
 
-.translation-text {
-    margin-top: 4px;
-    font-style: italic;
+.service-option {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.results-container {
+    margin-top: 10px;
+}
+
+.result-set {
+    margin-bottom: 15px;
+}
+
+.result-set h4 {
+    margin-bottom: 10px;
     color: #0056b3;
+}
+
+.srt-output {
+    display: flex;
+    gap: 15px;
+}
+
+.srt-block {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.srt-block label {
+    font-weight: bold;
+    margin-bottom: 5px;
+    font-size: 0.9em;
+}
+
+.srt-block textarea {
+    width: 100%;
+    height: 150px;
+    padding: 10px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    font-family: monospace;
+    font-size: 0.9em;
+    resize: vertical;
+    box-sizing: border-box; /* Ensures padding doesn't affect width */
+}
+
+.subtitle-controls {
+    margin-top: 5px;
+    display: flex;
+    gap: 10px;
+}
+
+.show-subs-btn {
+    padding: 5px 10px;
+    font-size: 0.9em;
+    cursor: pointer;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+.show-subs-btn:hover {
+    background-color: #218838;
+}
+
+.error {
+    color: #d9534f;
 }
 
 #timestamps-list button {
@@ -73,4 +185,27 @@ h1, h2 {
 
 #timestamps-list button:hover {
     background-color: #218838;
+}
+
+.subtitle-load-container {
+    margin: 20px 0;
+    padding: 15px;
+    background-color: #e9ecef;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+.save-srt-btn {
+    padding: 5px 10px;
+    font-size: 0.9em;
+    cursor: pointer;
+    background-color: #6c757d;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+.save-srt-btn:hover {
+    background-color: #5a6268;
 } 

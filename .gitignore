@@ -1,5 +1,6 @@
 # Environments
-.venv/
+.env
+.venv
 venv/
 __pycache__/
 
@@ -7,4 +8,8 @@ __pycache__/
 temp/
 
 # OS-specific files
-.DS_Store 
+.DS_Store
+
+# Secrets
+*.json
+*.log 

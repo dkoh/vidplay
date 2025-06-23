@@ -1,3 +1,6 @@
 Flask
 openai-whisper
-ffmpeg-python 
+ffmpeg-python
+openai
+python-dotenv
+google-cloud-speech 

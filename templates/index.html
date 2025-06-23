@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Video Transcription App</title>
+    <title>Video Transcription Comparator</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <h1>Video Transcription App</h1>
+    <h1>Video Transcription Comparator</h1>
 
     <div id="video-container">
         <video id="video-player" controls>
@@ -17,18 +17,31 @@
 
     <div>
         <label for="video-upload">Upload a video:</label>
-        <input type="file" id="video-upload" accept="video/mp4">
+        <input type="file" id="video-upload" accept="video/mp4,video/webm,video/ogg">
+    </div>
+
+    <div class="subtitle-load-container">
+        <label for="srt-upload">Load Custom Subtitle (.vtt, .srt):</label>
+        <input type="file" id="srt-upload" accept=".vtt,.srt">
     </div>
 
     <div id="controls">
-        <button id="mark-start-btn">Mark Start</button>
-        <button id="mark-end-btn" disabled>Mark End</button>
-        <button id="add-clip-btn" disabled>Add Clip</button>
+        <div class="time-control">
+            <label for="start-time-input">Start Time:</label>
+            <input type="text" id="start-time-input" class="time-input" placeholder="00:00:00.000">
+            <button id="mark-start-btn">Mark</button>
+        </div>
+        <div class="time-control">
+            <label for="end-time-input">End Time:</label>
+            <input type="text" id="end-time-input" class="time-input" placeholder="00:00:00.000">
+            <button id="mark-end-btn">Mark</button>
+        </div>
+        <button id="add-clip-btn">Add Clip for Transcription</button>
     </div>
 
     <h2>Marked Clips</h2>
     <ul id="timestamps-list">
-        <!-- Timestamps will be added here -->
+        <!-- Clips will be added here -->
     </ul>
 
     <script src="{{ url_for('static', filename='script.js') }}"></script>
