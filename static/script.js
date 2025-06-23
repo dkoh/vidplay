@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const addClipBtn = document.getElementById('add-clip-btn');
     const clipsList = document.getElementById('timestamps-list');
     let videoFile = null;
+    let mainSubtitleVTT = "WEBVTT\n\n"; // Holds the master subtitle track
 
     // --- Core Functions ---
     function formatTime(seconds) {
@@ -34,23 +35,31 @@ document.addEventListener('DOMContentLoaded', () => {
         let resultsHTML = '';
         results.forEach((result, index) => {
             const uniqueId = `${container.id}-result-${index}`;
+            // Store full VTT content in data attribute, display clean version in textarea
+            const cleanTranscription = result.transcription.replace(/^WEBVTT\s*/, '').trim();
+            const cleanTranslation = result.translation.replace(/^WEBVTT\s*/, '').trim();
+
             resultsHTML += `
                 <div class="result-set">
                     <h4>${result.service}</h4>
                     <div class="srt-output">
                         <div class="srt-block">
                             <label>Transcription</label>
-                            <textarea id="${uniqueId}-transcription" readonly>${result.transcription}</textarea>
+                            <textarea id="${uniqueId}-transcription" 
+                                      data-vtt="${encodeURIComponent(result.transcription)}" 
+                                      readonly>${cleanTranscription}</textarea>
                             <div class="subtitle-controls">
-                                <button class="show-subs-btn" data-target-id="${uniqueId}-transcription" data-lang="en" data-label="${result.service} Transcription">Show on Player</button>
+                                <button class="add-to-main-btn" data-target-id="${uniqueId}-transcription">Add to Main Subtitles</button>
                                 <button class="save-srt-btn" data-target-id="${uniqueId}-transcription" data-filename="transcription.srt">Save as .srt</button>
                             </div>
                         </div>
                         <div class="srt-block">
                             <label>Translation</label>
-                            <textarea id="${uniqueId}-translation" readonly>${result.translation}</textarea>
+                            <textarea id="${uniqueId}-translation" 
+                                      data-vtt="${encodeURIComponent(result.translation)}" 
+                                      readonly>${cleanTranslation}</textarea>
                              <div class="subtitle-controls">
-                                <button class="show-subs-btn" data-target-id="${uniqueId}-translation" data-lang="es" data-label="${result.service} Translation">Show on Player</button>
+                                <button class="add-to-main-btn" data-target-id="${uniqueId}-translation">Add to Main Subtitles</button>
                                 <button class="save-srt-btn" data-target-id="${uniqueId}-translation" data-filename="translation.srt">Save as .srt</button>
                             </div>
                         </div>
@@ -107,7 +116,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <button class="transcribe-btn" data-start-time="${start}" data-end-time="${end}" data-target-id="${uniqueId}">Transcribe</button>
             </div>
             <div class="clip-options">
-                <div class="service-option"><input type="checkbox" id="${uniqueId}-google-chirp" value="google-chirp" class="service-checkbox" checked> <label for="${uniqueId}-google-chirp">Google Chirp</label></div>
+                <!-- <div class="service-option"><input type="checkbox" id="${uniqueId}-google-chirp" value="google-chirp" class="service-checkbox" checked> <label for="${uniqueId}-google-chirp">Google Chirp</label></div> -->
                 <div class="service-option"><input type="checkbox" id="${uniqueId}-openai" value="openai" class="service-checkbox" checked> <label for="${uniqueId}-openai">OpenAI API</label></div>
                 <div class="service-option"><input type="checkbox" id="${uniqueId}-local-base" value="local-base" class="service-checkbox" checked> <label for="${uniqueId}-local-base">Local Whisper (Base)</label></div>
                 <div class="service-option"><input type="checkbox" id="${uniqueId}-local-medium" value="local-medium" class="service-checkbox"> <label for="${uniqueId}-local-medium">Local Whisper (Medium)</label></div>
@@ -136,7 +145,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (file.name.endsWith('.srt')) {
                     content = "WEBVTT\n\n" + content.replace(/(\d{2}:\d{2}:\d{2}),(\d{3})/g, '$1.$2');
                 }
-                displaySubtitlesOnPlayer(content, 'en', file.name);
+                mainSubtitleVTT = content; // Load into main subtitle track
+                displaySubtitlesOnPlayer(mainSubtitleVTT, 'en', file.name);
             };
             fileReader.readAsText(file);
         }
@@ -218,15 +228,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 button.disabled = false;
                 button.textContent = 'Transcribe';
             }
-        } else if (event.target.classList.contains('show-subs-btn')) {
+        } else if (event.target.classList.contains('add-to-main-btn')) {
             const button = event.target;
-            const { targetId, lang, label } = button.dataset;
-            const srtContent = document.getElementById(targetId).value;
-            displaySubtitlesOnPlayer(srtContent, lang, label);
+            const { targetId } = button.dataset;
+            const textarea = document.getElementById(targetId);
+            const newVttContent = decodeURIComponent(textarea.dataset.vtt);
+            
+            mainSubtitleVTT = mergeVtt(mainSubtitleVTT, newVttContent);
+            displaySubtitlesOnPlayer(mainSubtitleVTT, 'en', 'Master Subtitles');
+
         } else if (event.target.classList.contains('save-srt-btn')) {
             const button = event.target;
             const { targetId, filename } = button.dataset;
-            const vttContent = document.getElementById(targetId).value;
+            const vttContent = decodeURIComponent(document.getElementById(targetId).dataset.vtt);
             
             // Convert VTT to SRT for saving
             const srtContent = vttContent
@@ -245,4 +259,103 @@ document.addEventListener('DOMContentLoaded', () => {
             URL.revokeObjectURL(url);
         }
     });
+
+    document.querySelectorAll('.show-subs-btn').forEach(button => {
+        button.addEventListener('click', () => {
+            const card = button.closest('.result-card');
+            const transcriptionText = card.querySelector('.transcription-text');
+            const translationText = card.querySelector('.translation-text');
+
+            // Store the full VTT content in a data attribute for the player
+            transcriptionText.dataset.vtt = transcriptionText.value;
+            translationText.dataset.vtt = translationText.value;
+
+            // Display the content without the WEBVTT header for better readability
+            transcriptionText.value = transcriptionText.value.replace(/^WEBVTT\s*/, '').trim();
+            translationText.value = translationText.value.replace(/^WEBVTT\s*/, '').trim();
+
+            card.style.display = 'block';
+        });
+    });
+
+    document.querySelectorAll('.show-translation-btn').forEach(button => {
+        button.addEventListener('click', () => {
+            const card = button.closest('.result-card');
+            const vttContent = card.querySelector('.translation-text').dataset.vtt;
+            if (vttContent) {
+                showSubtitles(vttContent);
+            }
+        });
+    });
+
+    function showSubtitles(vttContent) {
+        const video = document.getElementById('videoPlayer');
+        displaySubtitlesOnPlayer(vttContent, 'en', 'Translated Subtitles');
+    }
+
+    // --- VTT Manipulation Logic ---
+
+    function parseVtt(vttString) {
+        if (!vttString || typeof vttString !== 'string') return [];
+        const lines = vttString.trim().split('\n');
+        const cues = [];
+        let i = 0;
+
+        // Skip WEBVTT header and any leading blank lines
+        while (i < lines.length && !lines[i].includes('-->')) {
+            i++;
+        }
+
+        while (i < lines.length) {
+            if (lines[i].includes('-->')) {
+                const timeLine = lines[i];
+                const [startStr, endStr] = timeLine.split(' --> ');
+                const textLines = [];
+                i++;
+                while (i < lines.length && lines[i].trim() !== '') {
+                    textLines.push(lines[i]);
+                    i++;
+                }
+                cues.push({
+                    start: parseTime(startStr),
+                    end: parseTime(endStr),
+                    text: textLines.join('\n')
+                });
+            }
+            i++; // Move to the next line to look for a timestamp
+        }
+        return cues;
+    }
+
+    function stringifyVtt(cues) {
+        let vtt = 'WEBVTT\n\n';
+        cues.forEach((cue, index) => {
+            vtt += `${index + 1}\n`;
+            vtt += `${formatTime(cue.start)} --> ${formatTime(cue.end)}\n`;
+            vtt += `${cue.text}\n\n`;
+        });
+        return vtt;
+    }
+
+    function mergeVtt(mainVtt, newVtt) {
+        const mainCues = parseVtt(mainVtt);
+        const newCues = parseVtt(newVtt);
+
+        if (newCues.length === 0) return mainVtt;
+
+        // Find the time range of the new cues
+        const newStartTime = Math.min(...newCues.map(c => c.start));
+        const newEndTime = Math.max(...newCues.map(c => c.end));
+
+        // Filter out old cues that overlap with the new time range
+        const filteredMainCues = mainCues.filter(cue => {
+            return cue.end <= newStartTime || cue.start >= newEndTime;
+        });
+
+        // Combine and sort
+        const combinedCues = [...filteredMainCues, ...newCues];
+        combinedCues.sort((a, b) => a.start - b.start);
+
+        return stringifyVtt(combinedCues);
+    }
 });
